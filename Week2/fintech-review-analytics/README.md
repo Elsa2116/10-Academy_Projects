@@ -2,6 +2,8 @@
 
 Customer experience analytics for Ethiopian fintech apps using Google Play Store reviews.
 
+This folder contains the Week 2 submission prepared on the `task-2` branch.
+
 This project analyzes reviews for:
 
 - Commercial Bank of Ethiopia (CBE)
