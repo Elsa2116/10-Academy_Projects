@@ -102,6 +102,14 @@ Expected added columns:
 review_id, sentiment_score, sentiment_label, identified_theme
 ```
 
+Sentiment output evidence is documented in:
+
+```text
+reports/sentiment_output_evidence.md
+```
+
+The latest verified run applied `sentiment_score` and `sentiment_label` to 1,089 reviews, exceeding the 400-review requirement.
+
 ## Task 3: PostgreSQL Database
 
 Create database:
@@ -194,3 +202,4 @@ Recommended branches:
 - Reviews may mix English, Amharic, transliteration, and short informal phrases.
 - Google Play scraping may be limited by app availability, package name accuracy, and rate limits.
 - VADER is used as a fast baseline. For stronger results, compare it with `distilbert-base-uncased-finetuned-sst-2-english`.
+- Pipeline scripts include basic file checks, required-column validation, and clearer error messages for scraping, CSV processing, visualization, and database insertion.

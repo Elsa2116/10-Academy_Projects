@@ -21,13 +21,21 @@ RAW_OUTPUT = RAW_DIR / "raw_reviews.csv"
 
 def scrape_bank_reviews(bank_name: str, app_id: str, count: int = 450) -> pd.DataFrame:
     """Scrape reviews for one bank app and return a standardized dataframe."""
-    result, _ = reviews(
-        app_id,
-        lang="en",
-        country="et",
-        sort=Sort.NEWEST,
-        count=count,
-    )
+    if not bank_name or not app_id:
+        raise ValueError("Bank name and Google Play app id are required.")
+    if count <= 0:
+        raise ValueError("Review count must be greater than zero.")
+
+    try:
+        result, _ = reviews(
+            app_id,
+            lang="en",
+            country="et",
+            sort=Sort.NEWEST,
+            count=count,
+        )
+    except Exception as exc:
+        raise RuntimeError(f"Failed to scrape reviews for {bank_name} ({app_id}).") from exc
 
     rows = [
         {
@@ -54,6 +62,9 @@ def main() -> None:
         all_reviews.append(bank_reviews)
 
     final_df = pd.concat(all_reviews, ignore_index=True)
+    if final_df.empty:
+        raise RuntimeError("No reviews were collected from Google Play.")
+
     final_df.to_csv(RAW_OUTPUT, index=False)
     print(f"Saved {len(final_df)} raw reviews to {RAW_OUTPUT}")
 

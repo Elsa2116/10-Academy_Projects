@@ -8,6 +8,7 @@ import pandas as pd
 
 INPUT_PATH = Path("data/processed/reviews_with_sentiment.csv")
 OUTPUT_PATH = Path("data/processed/final_reviews.csv")
+REQUIRED_COLUMNS = ["review", "rating", "date", "bank", "source", "sentiment_score", "sentiment_label"]
 
 THEME_KEYWORDS = {
     "Account Access Issues": ["login", "password", "pin", "signin", "sign in", "account", "fingerprint"],
@@ -28,9 +29,33 @@ def identify_theme(review: str) -> str:
     return "Other"
 
 
+def validate_theme_input(input_path: Path, df: pd.DataFrame) -> None:
+    """Validate sentiment-enriched data before assigning business themes."""
+    if df.empty:
+        raise ValueError(f"Sentiment review file contains zero rows: {input_path}")
+
+    missing_columns = [column for column in REQUIRED_COLUMNS if column not in df.columns]
+    if missing_columns:
+        raise ValueError(f"Missing required columns for theme analysis: {', '.join(missing_columns)}")
+
+    if df["review"].isna().any():
+        raise ValueError("Review text cannot contain missing values before theme analysis.")
+
+
 def run_theme_analysis(input_path: str | Path = INPUT_PATH, output_path: str | Path = OUTPUT_PATH) -> pd.DataFrame:
     """Add review IDs and identified themes, then save final processed data."""
-    df = pd.read_csv(input_path)
+    input_path = Path(input_path)
+    if not input_path.exists():
+        raise FileNotFoundError(f"Sentiment review file not found: {input_path}")
+
+    try:
+        df = pd.read_csv(input_path)
+    except pd.errors.EmptyDataError as exc:
+        raise ValueError(f"Sentiment review file has no readable rows: {input_path}") from exc
+
+    validate_theme_input(input_path, df)
+
+    # Keyword rules keep theme assignment transparent for business reviewers.
     df["identified_theme"] = df["review"].apply(identify_theme)
 
     if "review_id" not in df.columns:

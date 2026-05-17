@@ -1,6 +1,7 @@
 from pathlib import Path
 
 import pandas as pd
+import pytest
 
 from scripts.preprocess_reviews import clean_reviews
 
@@ -25,3 +26,13 @@ def test_clean_reviews_removes_duplicates_and_missing_values(tmp_path: Path):
     assert len(cleaned) == 2
     assert list(cleaned.columns) == ["review", "rating", "date", "bank", "source"]
     assert output_path.exists()
+
+
+def test_clean_reviews_rejects_missing_required_columns(tmp_path: Path):
+    input_path = tmp_path / "raw.csv"
+    output_path = tmp_path / "clean.csv"
+
+    pd.DataFrame({"review": ["Good app"], "rating": [5]}).to_csv(input_path, index=False)
+
+    with pytest.raises(ValueError, match="Missing required columns"):
+        clean_reviews(input_path, output_path)
